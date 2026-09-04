@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIM Sekolah — Sistem Informasi Manajemen Sekolah</title>
+<!-- === STYLES START === -->
+<style>
+  :root{
+    --merah:#c8102e;
+    --merah-dark:#8f0b20;
+    --putih:#ffffff;
+    --abu:#f4f4f6;
+    --teks:#232323;
+    --sukses:#1e8e3e;
+    --warn:#e0a800;
+    --bahaya:#c8102e;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--abu);color:var(--teks);}
+  .batik-bg{
+    background-color:var(--merah);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 14px),
+      repeating-linear-gradient(-45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 14px),
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0 6px, transparent 7px),
+      radial-gradient(circle at 70% 60%, rgba(255,255,255,0.08) 0 6px, transparent 7px);
+    background-size:auto, auto, 60px 60px, 60px 60px;
+  }
+  #loginScreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .login-card{
+    background:var(--putih);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,0.3);
+    width:100%;max-width:400px;padding:32px;text-align:center;
+  }
+  .logo-badge{
+    width:76px;height:76px;border-radius:50%;background:var(--merah);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 12px;
+    box-shadow:0 6px 14px rgba(200,16,46,0.4);
+  }
+  .login-card h1{font-size:20px;margin:4px 0 2px;color:var(--merah-dark);}
+  .login-card p.sub{margin:0 0 20px;color:#777;font-size:13px;}
+  .field{text-align:left;margin-bottom:14px;}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#444;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;
+    transition:border-color .15s;font-family:inherit;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--merah);}
+  .btn{
+    display:inline-block;padding:10px 18px;border:none;border-radius:8px;background:var(--merah);
+    color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:background .15s, transform .1s;
+  }
+  .btn:hover{background:var(--merah-dark);}
+  .btn:active{transform:scale(0.98);}
+  .btn.secondary{background:#eee;color:#333;}
+  .btn.secondary:hover{background:#ddd;}
+  .btn.small{padding:6px 10px;font-size:12px;}
+  .btn.danger{background:var(--bahaya);}
+  .btn.success{background:var(--sukses);}
+  .btn-block{width:100%;}
+  #loginError{
+    background:#ffe8ea;color:var(--merah-dark);padding:8px 10px;border-radius:8px;font-size:13px;
+    margin-bottom:12px;display:none;
+  }
+  .demo-hint{margin-top:18px;font-size:11.5px;color:#999;line-height:1.6;text-align:left;background:#fafafa;border-radius:8px;padding:10px;}
+  .demo-hint b{color:#555;}
+
+  #appScreen{display:none;min-height:100vh;}
+  header.topbar{
+    background:var(--merah);color:#fff;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 20px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  }
+  header.topbar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;}
+  header.topbar .brand .ic{font-size:24px;}
+  header.topbar .userbox{display:flex;align-items:center;gap:10px;font-size:13px;}
+  header.topbar .userbox .role-badge{
+    background:rgba(255,255,255,0.2);padding:3px 9px;border-radius:20px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+  }
+  .layout{display:flex;min-height:calc(100vh - 54px);}
+  nav.sidebar{
+    width:220px;background:#fff;border-right:1px solid #eee;padding:16px 10px;flex-shrink:0;
+  }
+  nav.sidebar button{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:none;
+    background:transparent;border-radius:8px;font-size:14px;cursor:pointer;margin-bottom:4px;color:#444;
+  }
+  nav.sidebar button:hover{background:#fbe9ea;}
+  nav.sidebar button.active{background:var(--merah);color:#fff;font-weight:600;}
+  main.content{flex:1;padding:22px;overflow-x:auto;}
+  .card{background:#fff;border-radius:var(--radius);padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:18px;}
+  .grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px;}
+  .stat-card{
+    background:linear-gradient(135deg,var(--merah),var(--merah-dark));color:#fff;border-radius:var(--radius);
+    padding:16px;position:relative;overflow:hidden;
+  }
+  .stat-card .num{font-size:28px;font-weight:700;}
+  .stat-card .lbl{font-size:12.5px;opacity:0.9;}
+  .stat-card .icon{position:absolute;right:10px;top:10px;font-size:34px;opacity:0.25;}
+  h2.section-title{margin:0 0 14px;font-size:18px;color:var(--merah-dark);border-left:4px solid var(--merah);padding-left:10px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table th, table td{padding:9px 10px;border-bottom:1px solid #eee;text-align:left;}
+  table th{background:#fbeaec;color:var(--merah-dark);font-weight:600;}
+  table tr:hover td{background:#fffaf9;}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;justify-content:space-between;}
+  .toolbar .left{display:flex;gap:8px;flex-wrap:wrap;}
+  input.search, select.search{padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;}
+  .badge{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;}
+  .badge.hadir{background:#e3f6e8;color:var(--sukses);}
+  .badge.izin{background:#fff6da;color:var(--warn);}
+  .badge.sakit{background:#e6f0ff;color:#3160c9;}
+  .badge.alpa{background:#ffe3e6;color:var(--bahaya);}
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:14px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+    padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  .modal-box h3{margin:0 0 16px;color:var(--merah-dark);font-size:17px;border-bottom:2px solid #f2d2d6;padding-bottom:10px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+  .form-grid .field.full{grid-column:1 / -1;}
+  .empty-state{text-align:center;padding:40px 10px;color:#999;font-size:14px;}
+  .empty-state .ic{font-size:40px;margin-bottom:8px;}
+  #toastBox{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:8px;}
+  .toast{
+    background:#222;color:#fff;padding:10px 16px;border-radius:8px;font-size:13.5px;box-shadow:0 6px 18px rgba(0,0,0,0.3);
+    animation:slideIn .25s ease; min-width:220px;
+  }
+  .toast.success{background:var(--sukses);}
+  .toast.error{background:var(--bahaya);}
+  .toast.info{background:#2b6cb0;}
+  @keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  .pill-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .pill-tabs button{
+    border:1px solid #eee;background:#fff;padding:7px 14px;border-radius:20px;font-size:12.5px;cursor:pointer;color:#555;
+  }
+  .pill-tabs button.active{background:var(--merah);color:#fff;border-color:var(--merah);}
+  .avatar-circ{width:34px;height:34px;border-radius:50%;background:var(--merah);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+  .flex-between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .muted{color:#888;font-size:12.5px;}
+  .announcement-item{border-left:4px solid var(--merah);background:#fff8f8;padding:12px 14px;border-radius:8px;margin-bottom:10px;}
+  .announcement-item h4{margin:0 0 4px;font-size:14.5px;color:var(--merah-dark);}
+  .announcement-item .meta{font-size:11.5px;color:#999;margin-bottom:6px;}
+  .score-bar{height:6px;background:#eee;border-radius:4px;overflow:hidden;margin-top:4px;}
+  .score-bar span{display:block;height:100%;background:var(--merah);}
+  @media(max-width:800px){
+    nav.sidebar{width:64px;}
+    nav.sidebar button span.txt{display:none;}
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+<!-- === STYLES END === -->
+</head>
+<body>
+
+<!-- ===================== LOGIN SCREEN ===================== -->
+<div id="loginScreen" class="batik-bg">
+  <div class="login-card">
+    <div class="logo-badge">🏫</div>
+    <h1>SIM Sekolah</h1>
+    <p class="sub">Sistem Informasi Manajemen Sekolah</p>
+    <div id="loginError"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="loginUsername" autocomplete="username" placeholder="Masukkan username" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Masukkan password" required>
+      </div>
+      <button type="submit" class="btn btn-block">Masuk</button>
+    </form>
+    <div class="demo-hint">
+      <b>Akun Demo:</b><br>
+      Admin — user: <b>admin</b> / pass: <b>admin123</b><br>
+      Guru — user: <b>guru</b> / pass: <b>guru123</b><br>
+      Siswa — user: <b>siswa</b> / pass: <b>siswa123</b>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="appScreen">
+  <header class="topbar">
+    <div class="brand"><span class="
